@@ -35,7 +35,7 @@ module JunosConfig
     end
     
     def parse_security(raw_section)
-      @security_zones = raw_section.scan(/^(\ {8}security\-zone\ \S+ \{$.*?^\ {8}\})$/m).collect do |x|
+      @security_zones = raw_section.scan(/^(\ {8}security\-zone\ \S+ ?(\{|;))$/m).collect do |x|
         Security::Zone.new self, x[0]
       end
       @security_policies = raw_section.scan(/^\ {8}from\-zone\ (\S+) to\-zone (\S+) \{$(.*?)^\ {8}\}$/m).collect do |x|
