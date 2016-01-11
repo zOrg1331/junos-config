@@ -24,7 +24,7 @@ module JunosConfig
     end
     
     def parse_groups(raw_section)
-      m = raw_section.match(/host\-name\ (\S+)-\S;/m)
+      m = raw_section.match(/host\-name\ (\S+);/m)
       @hostname = m[1]
     end
     
