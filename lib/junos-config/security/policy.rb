@@ -8,7 +8,8 @@ module JunosConfig
                     :to_zone,
                     :source_address,
                     :destination_address,
-                    :application
+                    :application,
+                    :rule
       
       def initialize(config, raw, from_zone, to_zone)
         @config    = config
@@ -32,6 +33,8 @@ module JunosConfig
           s = s.slice(1,s.length-2) if s.length > 1
           @application = s
         end
+        m = raw.match(/^\ {16}then\ \{.*?^\ {20}(\S+);$/m)
+        @rule = m[1] if m
       end
     end
   end
