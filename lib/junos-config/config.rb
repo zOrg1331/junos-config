@@ -8,7 +8,8 @@ module JunosConfig
                 :security_zones,
                 :security_policies,
                 :applications,
-                :application_sets
+                :application_sets,
+                :global_address_book,
     
     def initialize(raw)
       @raw = raw
@@ -21,6 +22,9 @@ module JunosConfig
         method = "parse_#{section[0]}"
         send method, section[1] if respond_to?(method)
       end
+
+      m = raw.match(/^(\ {4}address\-book\ \{$.*?^\ {8}global\ \{$.*?^\ {4}\})$/m)
+      @global_address_book = Security::AddressBook.new(@config, m[0], 12) if m
     end
     
     def parse_groups(raw_section)

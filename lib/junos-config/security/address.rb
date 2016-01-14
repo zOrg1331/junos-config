@@ -6,10 +6,10 @@ module JunosConfig
                     :name,
                     :ip
     
-      def initialize(config, raw)
+      def initialize(config, raw, shift)
         @config = config
         @raw    = raw
-        m = raw.match(/^\ {16}address (\S+)\ (\S+);/)
+        m = raw.match(/^\ {#{shift}}address (\S+)\ (\S+);/)
         @name = m[1]
         @ip = m[2]
       end

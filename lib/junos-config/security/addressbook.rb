@@ -7,14 +7,14 @@ module JunosConfig
                     :addresses,
                     :address_sets
     
-      def initialize(config, raw)
+      def initialize(config, raw, shift)
         @config = config
         @raw    = raw        
-        @addresses = raw.scan(/^(\ {16}address \S+ \S+;)$/).collect do |x|
-          Security::Address.new self, x[0]
+        @addresses = raw.scan(/^(\ {#{shift}}address \S+ \S+;)$/).collect do |x|
+          Security::Address.new self, x[0], shift
         end
-        @address_sets = raw.scan(/^(\ {16}address-set \S+ \{$.*?^\ {16}\})$/m).collect do |x|
-          Security::AddressSet.new self, x[0]
+        @address_sets = raw.scan(/^(\ {#{shift}}address-set \S+ \{$.*?^\ {#{shift}}\})$/m).collect do |x|
+          Security::AddressSet.new self, x[0], shift
         end
         @resolv = {}
         @addresses.each { |a| @resolv[a.name] = a }

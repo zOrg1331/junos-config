@@ -6,11 +6,11 @@ module JunosConfig
                     :name,
                     :addresses
     
-      def initialize(config, raw)
+      def initialize(config, raw, shift)
         @config = config
         @raw    = raw
-        @name   = raw.match(/^\ {16}address-set (\S+)\ \{$/)[1]
-        @addresses = raw.scan(/^(\ {20}address (\S+);)$/).collect do |x|
+        @name   = raw.match(/^\ {#{shift}}address-set (\S+)\ \{$/)[1]
+        @addresses = raw.scan(/^(\ {#{shift + 4}}address (\S+);)$/).collect do |x|
           String.new x[1]
         end
       end
