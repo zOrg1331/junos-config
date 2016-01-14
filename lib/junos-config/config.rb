@@ -10,6 +10,9 @@ module JunosConfig
                 :applications,
                 :application_sets,
                 :global_address_book,
+                :dnat,
+                :snat,
+                :stnat
     
     def initialize(raw)
       @raw = raw
@@ -50,6 +53,13 @@ module JunosConfig
         end
       end
       @security_policies.flatten!
+      m = raw.match(/^(\ {4}nat\ \{$.*?^\ {4}\})$/m)
+      t = m[0].match(/^(\ {8}destination\ \{$.*?^\ {8}\})$/m)
+      @dnat = Security::Nat.new self, t[0] if t
+      t = m[0].match(/^(\ {8}source\ \{$.*?^\ {8}\})$/m)
+      @snat = Security::Nat.new self, t[0] if t
+      t = m[0].match(/^(\ {8}static\ \{$.*?^\ {8}\})$/m)
+      @stnat = Security::Nat.new self, t[0] if t
     end
     
     def parse_applications(raw_section)
