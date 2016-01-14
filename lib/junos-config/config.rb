@@ -45,10 +45,19 @@ module JunosConfig
       @security_zones = raw_section.scan(/^(\ {8}security\-zone\ \S+ ?(\{|;))$/m).collect do |x|
         Security::Zone.new self, x[0]
       end
+      # add default "global" security zone
+      @security_zones << Security::Zone.new(self, "        security-zone global {\n        }")
       @security_policies = raw_section.scan(/^\ {8}from\-zone\ (\S+) to\-zone (\S+) \{$(.*?)^\ {8}\}$/m).collect do |x|
         from_zone = security_zones.find{ |zone| zone.name == x[0] }
         to_zone   = security_zones.find{ |zone| zone.name == x[1] }
         x[2].scan(/(\ {12}policy \S+ \{$.*?^\ {12}\}$)/m).collect do |y|
+          Security::Policy.new self, y[0], from_zone, to_zone
+        end
+      end
+      @security_policies += raw_section.scan(/^\ {8}global \{$(.*?)^\ {8}\}$/m).collect do |x|
+        from_zone = security_zones.find{ |zone| zone.name == "global" }
+        to_zone   = security_zones.find{ |zone| zone.name == "global" }
+        x[0].scan(/(\ {12}policy \S+ \{$.*?^\ {12}\}$)/m).collect do |y|
           Security::Policy.new self, y[0], from_zone, to_zone
         end
       end
