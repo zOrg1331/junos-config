@@ -4,7 +4,9 @@ module JunosConfig
       attr_accessor :raw,
                     :config,
                     :pools,
-                    :rulesets
+                    :rulesets,
+                    :priv_pub_map,
+                    :pub_priv_map
       
       def initialize(config, raw)
         @config    = config
@@ -17,20 +19,16 @@ module JunosConfig
         @rulesets = raw.scan(/^(\ {12}rule\-set\ \S+ \{$.*?^\ {12}\})$/m).collect do |x|
           Security::Ruleset.new self, x[0]
         end
-      end
 
-      def pool_ip_from_name(name)
-        @pools.each do |p|
-          return p.ip if p.name == name
+        @priv_pub_map = {}
+        @pub_priv_map = {}
+        @rulesets.each do |rs|
+          rs.rules.each do |r|
+            next if not r.dst_addr
+            @priv_pub_map[r.target_pool_ip] = r.dst_addr[0]
+            @pub_priv_map[r.dst_addr[0]] = r.target_pool_ip
+          end
         end
-        return name
-      end
-
-      def pool_port_from_name(name)
-        @pools.each do |p|
-          return p.port if p.name == name
-        end
-        return ""
       end
     end
   end
