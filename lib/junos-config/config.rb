@@ -14,8 +14,9 @@ module JunosConfig
                 :snat,
                 :stnat
     
-    def initialize(raw)
+    def initialize(raw, junos_apps = "")
       @raw = raw
+      @junos_apps = junos_apps
     
       m = raw.match(/Last\ changed:\ (.*?)\nversion\ (\S+);/m)
       @last_changed = m[1] if m
@@ -72,25 +73,29 @@ module JunosConfig
     end
     
     def parse_applications(raw_section)
-      @applications = raw_section.scan(/^(\ {4}application\ \S+ \{$.*?^\ {4}\})$/m).collect do |x|
-        Application.new self, x[0]
+      @applications = @junos_apps.scan(/^(application\ \S+ \{$.*?^\})$/m).collect do |x|
+        Application.new self, x[0], 0
+      end
+      @applications += raw_section.scan(/^(\ {4}application\ \S+ \{$.*?^\ {4}\})$/m).collect do |x|
+        Application.new self, x[0], 4
       end
       @application_lookup = {}
       @applications.each{|a| @application_lookup[a.name] =  a }
-      @application_sets = raw_section.scan(/^(\ {4}application\-set\ \S+ \{$.*?^\ {4}\})$/m).collect do |x|
-        ApplicationSet.new self, x[0]
+      @application_sets = @junos_apps.scan(/^(application\-set\ \S+ \{$.*?^\})$/m).collect do |x|
+        ApplicationSet.new self, x[0], 0
+      end
+      @application_sets += raw_section.scan(/^(\ {4}application\-set\ \S+ \{$.*?^\ {4}\})$/m).collect do |x|
+        ApplicationSet.new self, x[0], 4
       end
       @application_sets.each{|a| @application_lookup[a.name] =  a }
-      
-      @security_policies.each do |policy|
-        policy.application.collect! {|name| application(name) }
-      end
     end
     
     def application(name)
-      if name =~ /any|ESP|esp|junos\-/
-        # junos internal applications
-        return name
+      if @junos_apps.size == 0
+        if name =~ /any|ESP|esp|junos\-/
+          # junos internal applications
+          return name
+        end
       end
       @application_lookup[name]
     end
