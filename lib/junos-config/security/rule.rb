@@ -8,7 +8,9 @@ module JunosConfig
                     :dst_addr,
                     :dst_port,
                     :action,
-                    :target_pool
+                    :target_pool,
+                    :target_pool_ip,
+                    :target_pool_port
     
       def initialize(config, raw)
         @config = config
@@ -45,7 +47,7 @@ module JunosConfig
           if action_payload.include?("off")
             @target_pool = "off"
           elsif action_payload.include?("interface")
-              @target_pool = "interface"
+            @target_pool = "interface"
           elsif action_payload.match(/^\ {28}pool\ \{/)
             m = action_payload.match(/^\ {28}pool\ \{$.*?^\ {32}(\S+);/m)
             @target_pool = m[1]
@@ -65,6 +67,16 @@ module JunosConfig
 
           m = prefix.match(/^\ {32}(\d\S+);/)
           @target_pool = m[1]
+        end
+
+        @target_pool_ip = @target_pool
+        @target_pool_port = ""
+        @config.config.pools.each do |p|
+          if p.name == @target_pool
+            @target_pool_ip = p.ip
+            @target_pool_port = p.port
+            break
+          end
         end
       end
     end
