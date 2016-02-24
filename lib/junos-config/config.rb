@@ -97,6 +97,7 @@ module JunosConfig
           return name
         end
       end
+      return name if not @application_lookup
       @application_lookup[name]
     end
   end
