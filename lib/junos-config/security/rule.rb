@@ -53,9 +53,15 @@ module JunosConfig
             @target_pool = m[1]
           end
         elsif action_sect.match(/^\ {24}destination\-nat\ /)
-          m = action_sect.match(/^\ {24}destination\-nat\ pool\ (\S+);/)
-          @action = "dnat"
-          @target_pool = m[1]
+          if action_sect.match(/^\ {28}pool\ \{/)
+            m = action_sect.match(/^\ {28}pool\ \{$.*?^\ {32}(\S+);/m)
+            @action = "dnat"
+            @target_pool = m[1]
+          else
+            m = action_sect.match(/^\ {24}destination\-nat\ pool\ (\S+);/)
+            @action = "dnat"
+            @target_pool = m[1]
+          end
         elsif action_sect.match(/^\ {24}static-nat \{/)
           @action = "stnat"
 
